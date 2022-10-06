@@ -1,8 +1,14 @@
 mod password_generator;
+mod server;
+
+use std::net::TcpListener;
 
 use clap::Parser;
 use clipboard::ClipboardContext;
 use clipboard::ClipboardProvider;
+
+use rouille::Request;
+use rouille::Response;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -49,6 +55,14 @@ fn main() {
         } else {
             let mut ctx = ClipboardContext::new().unwrap();
             ctx.set_contents(*password.to_owned()).unwrap();
+        }
+    } else {
+        let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
+
+        for stream in listener.incoming() {
+            let stream = stream.unwrap();
+
+            server::handle_connection(stream);
         }
     }
 }
